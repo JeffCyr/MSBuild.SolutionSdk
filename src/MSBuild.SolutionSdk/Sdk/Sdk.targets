@@ -1,0 +1,9 @@
+<Project>
+
+    <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\Targets\MSBuild.SolutionSdk.targets" />
+
+</Project>

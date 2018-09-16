@@ -1,0 +1,19 @@
+<Project>
+    <Import Project="..\..\MSBuild.SolutionSdk\Sdk\Sdk.props" />
+
+    <PropertyGroup>
+        <EnableDefaultProjectItems>true</EnableDefaultProjectItems>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Project Include="HelloWorld\HelloWorld.csproj">
+            <Configuration>Debug</Configuration>
+        </Project>
+
+        <Project Include="HelloWorld\HelloWorld.csproj">
+            <Configuration>Debug</Configuration>
+        </Project>
+    </ItemGroup>
+
+    <Import Project="..\..\MSBuild.SolutionSdk\Sdk\Sdk.targets" />
+</Project>

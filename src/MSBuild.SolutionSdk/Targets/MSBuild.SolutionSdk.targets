@@ -1,0 +1,67 @@
+<Project InitialTargets="_AddDefaultProjects;_PrepareProjectReferences">
+
+    <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+        <_Platform>$(Platform)</_Platform>
+        <_Platform Condition="'$(_Platform)' == ''">AnyCPU</_Platform>
+        <_Platform Condition="'$(_Platform)' == 'Any CPU'">AnyCPU</_Platform>
+        <EnableDefaultProjectItems Condition="'$(EnableDefaultProjectItems)' == ''">true</EnableDefaultProjectItems>
+        <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
+        <DefaultProjectItemExcludes Condition="'$(DefaultProjectItemExcludes)' != ''">$(DefaultProjectItemExcludes);</DefaultProjectItemExcludes>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(EnableDefaultProjectItems)' == 'true'">
+        <EnableDefaultCSharpProjectItems Condition="'$(EnableDefaultCSharpProjectItems)' == ''">true</EnableDefaultCSharpProjectItems>
+        <EnableDefaultVBProjectItems Condition="'$(EnableDefaultVBProjectItems)' == ''">true</EnableDefaultVBProjectItems>
+        <EnableDefaultFSharpProjectItems Condition="'$(EnableDefaultFSharpProjectItems)' == ''">true</EnableDefaultFSharpProjectItems>
+        <EnableDefaultCppProjectItems Condition="'$(EnableDefaultCppProjectItems)' == ''">true</EnableDefaultCppProjectItems>
+    </PropertyGroup>
+
+    <Target Name="Build">
+        <MSBuild Projects="@(_ProjectReference)" Targets="Build" BuildInParallel="$(BuildInParallel)" />
+    </Target>
+
+    <Target Name="Clean">
+        <MSBuild Projects="@(_ProjectReference)" Targets="Clean" BuildInParallel="$(BuildInParallel)" />
+    </Target>
+
+    <Target Name="Rebuild">
+        <MSBuild Projects="@(_ProjectReference)" Targets="Rebuild" BuildInParallel="$(BuildInParallel)" />
+    </Target>
+
+    <Target Name="Restore">
+        <MSBuild Projects="@(_ProjectReference)" Targets="Restore" BuildInParallel="$(BuildInParallel)" />
+    </Target>
+
+    <Target Name="Publish">
+        <MSBuild Projects="@(_ProjectReference)" Targets="Publish" BuildInParallel="$(BuildInParallel)" />
+    </Target>
+
+    <Target Name="ListProjects">
+        <Message Importance="high" Text="%(Project.FullPath) (%(Configuration)|%(Platform))" />
+    </Target>
+
+    <Target Name="_AddDefaultProjects">
+        <PropertyGroup>
+            <_ExplicitProjects>%(Project.FullPath)</_ExplicitProjects>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <Project Condition="'$(EnableDefaultCSharpProjectItems)' == 'true'" Include="**/*.csproj" Exclude="$(DefaultProjectItemExcludes)$(_ExplicitProjects)" />
+            <Project Condition="'$(EnableDefaultVBProjectItems)' == 'true'" Include="**/*.vbproj" Exclude="$(DefaultProjectItemExcludes))$(_ExplicitProjects)" />
+            <Project Condition="'$(EnableDefaultFSharpProjectItems)' == 'true'" Include="**/*.fsproj" Exclude="$(DefaultProjectItemExcludes))$(_ExplicitProjects)" />
+            <Project Condition="'$(EnableDefaultCppProjectItems)' == 'true'" Include="**/*.vcxproj" Exclude="$(DefaultProjectItemExcludes))$(_ExplicitProjects)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_PrepareProjectReferences">
+        <ItemGroup>
+            <_ProjectReference Include="@(Project)">
+                <Properties>Configuration=%(Configuration);Platform=%(Platform)</Properties>
+                <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
+            </_ProjectReference>
+        </ItemGroup>
+    </Target>
+
+</Project>

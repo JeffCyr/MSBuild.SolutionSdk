@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>MSBuild.SolutionSdk.Hook</id>
+    <version>0.0.2</version>
+    <title>MSBuild Solution Sdk project hooks for .NET</title>
+    <authors>Jeff Cyr</authors>
+    <owners>Jeff Cyr</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <developmentDependency>true</developmentDependency>
+    <description>Project hooks for MSBuild.SolutionSdk package.</description>
+    <summary>Project hooks for MSBuild.SolutionSdk package.</summary>
+    <copyright>© Jeff Cyr</copyright>
+    <tags>msbuild,sdk,slnproj</tags>
+    <packageTypes>
+      <packageType name="Dependency" />
+    </packageTypes>
+  </metadata>
+</package>

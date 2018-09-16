@@ -1,0 +1,5 @@
+<Project>
+    <ItemGroup>
+        <ProjectReference Include="ProjectB.proj" />
+    </ItemGroup>
+</Project>
