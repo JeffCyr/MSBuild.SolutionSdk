@@ -10,6 +10,9 @@
     <developmentDependency>true</developmentDependency>
     <description>An MSBuild SDK package for SDK-style .NET solution projects.</description>
     <summary>An MSBuild SDK package for SDK-style .NET solution projects.</summary>
+    <projectUrl>https://github.com/JeffCyr/MSBuild.SolutionSdk</projectUrl>
+    <licenseUrl>https://github.com/JeffCyr/MSBuild.SolutionSdk/blob/master/LICENSE</licenseUrl>
+    <repository type="git" url="https://github.com/JeffCyr/MSBuild.SolutionSdk" />
     <copyright>© Jeff Cyr</copyright>
     <tags>msbuild,sdk,slnproj</tags>
     <packageTypes>
