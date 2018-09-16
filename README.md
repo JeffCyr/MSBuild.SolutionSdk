@@ -14,4 +14,21 @@ By default, all csproj/vbproj/fsproj/vcxproj under the folder hierarchy of the s
 
 >While the solution file can have any extension, the proposed convention is to use .slnproj.
 
+# Comparison with sln files
+Slnproj may not be meant for you if you only work in Visual Studio since they are not supported*, but it can be an interesting choice for working with VS Code or creating build-only solution files.
+## slnproj
+Pros | Cons
+---- | ----
+Readable/editable file format | Not supported by Visual Studio*
+Easy to merge in source control | 
+Sane configuration management | 
 
+**Slnproj can work with "Visual Studio -> Open Folder"*
+
+## sln
+Pros | Cons
+---- | ----
+Supported by Visual Studio | Nearly impossible to edit without tool
+&#xfeff; | Hard to merge in source control conflicts
+&#xfeff; | Configuration management impossible without tool
+&#xfeff; | Even with tool configuration management is hard
