@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <UsingSolutionSdk>true</UsingSolutionSdk>
         <SolutionSdkTargetsDirectory>$(MSBuildThisFileDirectory)</SolutionSdkTargetsDirectory>
     </PropertyGroup>
 
