@@ -87,3 +87,8 @@ Here, the `Debug` configuration is overriden by `windows-debug` for ProjectA.csp
 ```
 
 You can include the same project multiple times with different metadata to build different savor of the same project with a single msbuild command.
+
+
+# Roadmap
+- Support `Platform`inference based on project platforms
+- Skip projects when `Configuration` is not defined in the project configurations.
