@@ -9,6 +9,24 @@ With `MSBuild.SolutionSdk`, the content of a solution file can be as lean as thi
 
 >X.X.X represent the latest version of the [MSBuild.SolutionSdk](https://www.nuget.org/packages/MSBuild.SolutionSdk/) NuGet package.
 
+# Building a .slnproj
+A .slnproj file is a standard msbuild project, the command line build experience is the same as a .sln file.
+
+The default properties are `Configuration=Debug;Platform=AnyCPU` and the default target is `Build`.
+
+```shell
+msbuild MySolution.slnproj
+msbuild MySolution.slnproj /p:Configuration=Release /t:Rebuild
+```
+
+The supported targets are:
+- Build
+- Clean
+- Rebuild
+- Restore
+- Publish
+- ListProjects
+
 # Comparison with sln files
 Slnproj may not be meant for you if you only work in Visual Studio since they are not supported*, but it can be an interesting choice for working with VS Code or creating build-only solution files.
 ## .slnproj
@@ -16,7 +34,7 @@ Pros | Cons
 ---- | ----
 Readable/editable file format | Not supported by Visual Studio*
 Easy to merge in source control | 
-Sane configuration management | 
+Sane and powerful configuration management | 
 
 ## .sln
 Pros | Cons
@@ -24,7 +42,7 @@ Pros | Cons
 Supported by Visual Studio | Nearly impossible to edit without tool
 &#xfeff; | Hard to merge in source control conflicts
 &#xfeff; | Configuration management impossible without tool
-&#xfeff; | Even with tool configuration management is hard
+&#xfeff; | Even with tool configuration management is limited
 
 *\* .slnproj can work with "Visual Studio -> Open Folder"*
 
