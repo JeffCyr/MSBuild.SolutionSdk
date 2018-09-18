@@ -108,5 +108,5 @@ You can include the same project multiple times with different metadata to build
 
 
 # Roadmap
-- Support `Platform`inference based on project platforms
-- Skip projects when `Configuration` is not defined in the project configurations.
+- Support explicit project dependencies with `<Project Include="project.csproj" DependsOn="otherproject.csproj" />`
+- Automatically skip projects when `Configuration` or `Platform` is not defined in the project configurations.
