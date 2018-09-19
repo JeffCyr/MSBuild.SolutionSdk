@@ -110,3 +110,7 @@ You can include the same project multiple times with different metadata to build
 # Roadmap
 - Support explicit project dependencies with `<Project Include="project.csproj" DependsOn="otherproject.csproj" />`
 - Automatically skip projects when `Configuration` or `Platform` is not defined in the project configurations.
+
+# Open Questions
+- Should the Sdk import and extends Microsoft.Common props & targets?
+- Otherwise, should it import Directory.Build props & targets?
