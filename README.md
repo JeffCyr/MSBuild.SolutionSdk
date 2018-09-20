@@ -79,7 +79,7 @@ This .slnproj disabled automatic project include by setting the `EnableDefaultPr
 <Project Sdk="MSBuild.SolutionSdk/X.X.X">
 
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-        <Project Include="ProjectA\ProjectA.csproj" Configuration="windows-debug" />
+        <Project Update="ProjectA\ProjectA.csproj" Configuration="windows-debug" />
     </ItemGroup>
 
 </Project>
@@ -90,6 +90,10 @@ Here, the `Debug` configuration is overriden by `windows-debug` for ProjectA.csp
 ## Build a project twice
 ```xml
 <Project Sdk="MSBuild.SolutionSdk/X.X.X">
+
+    <PropertyGroup>
+        <EnableDefaultProjectItems>false</EnableDefaultProjectItems>
+    </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
         <Project Include="ProjectA\ProjectA.csproj" Configuration="windows-debug" />

@@ -2,8 +2,19 @@
 
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        
         <UsingSolutionSdk>true</UsingSolutionSdk>
         <SolutionSdkTargetsDirectory>$(MSBuildThisFileDirectory)</SolutionSdkTargetsDirectory>
+
+        <Configurations Condition=" '$(Configurations)' == '' ">Debug;Release</Configurations>
+        <Platforms Condition=" '$(Platforms)' == '' ">AnyCPU</Platforms>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+
+        <EnableDefaultProjectItems Condition="'$(EnableDefaultProjectItems)' == ''">true</EnableDefaultProjectItems>
+        <DefaultProjectItemIncludes Condition="'$(DefaultProjectItemIncludes)' == ''">**/*.csproj;**/*.vbproj;**/*.fsproj;**/*.vcxproj</DefaultProjectItemIncludes>
+
+        <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
     </PropertyGroup>
 
     <ItemDefinitionGroup>
@@ -13,5 +24,9 @@
             <AdditionalProperties>$(AdditionalProperties)</AdditionalProperties>
         </Project>
     </ItemDefinitionGroup>
+
+    <ItemGroup Condition="'$(EnableDefaultProjectItems)' == 'true'">
+        <Project Include="$(DefaultProjectItemIncludes)" Exclude="$(DefaultProjectItemExcludes)" />
+    </ItemGroup>
 
 </Project>

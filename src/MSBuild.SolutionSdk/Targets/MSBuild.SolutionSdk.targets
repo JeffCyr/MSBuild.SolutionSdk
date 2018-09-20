@@ -1,15 +1,13 @@
-<Project InitialTargets="_AddDefaultProjects;_PrepareProjectReferences">
+<Project InitialTargets="_PrepareProjectReferences">
 
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-        <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+
         <_Platform>$(Platform)</_Platform>
-        <_Platform Condition="'$(_Platform)' == ''">AnyCPU</_Platform>
         <_Platform Condition="'$(_Platform)' == 'Any CPU'">AnyCPU</_Platform>
-        <EnableDefaultProjectItems Condition="'$(EnableDefaultProjectItems)' == ''">true</EnableDefaultProjectItems>
-        <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
-        <DefaultProjectItemIncludes Condition="'$(DefaultProjectItemIncludes)' == ''">**/*.csproj;**/*.vbproj;**/*.fsproj;**/*.vcxproj</DefaultProjectItemIncludes>
+        
         <DefaultProjectItemExcludes Condition="'$(DefaultProjectItemExcludes)' != ''">$(DefaultProjectItemExcludes);</DefaultProjectItemExcludes>
+        <DefaultProjectItemExcludes>$(DefaultProjectItemExcludes)$(MSBuildProjectFile)</DefaultProjectItemExcludes>
     </PropertyGroup>
 
     <Target Name="Build">
@@ -34,16 +32,6 @@
 
     <Target Name="ListProjects">
         <Message Importance="high" Text="%(Project.FullPath) (%(Configuration)|%(Platform))" />
-    </Target>
-
-    <Target Name="_AddDefaultProjects" Condition="'$(EnableDefaultProjectItems)' == 'true'">
-        <PropertyGroup>
-            <_ExplicitProjects>%(Project.FullPath)</_ExplicitProjects>
-        </PropertyGroup>
-
-        <ItemGroup>
-            <Project Include="$(DefaultProjectItemIncludes)" Exclude="$(DefaultProjectItemExcludes)$(_ExplicitProjects)" />
-        </ItemGroup>
     </Target>
 
     <Target Name="_PrepareProjectReferences">

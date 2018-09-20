@@ -6,8 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Project Include="HelloWorld\HelloWorld.csproj">
-            <Configuration>Release</Configuration>
+        <Project Include="ProjectB\ProjectB.csproj" />
+        <Project Include="ProjectA\ProjectA.csproj">
+            <DependsOn>ProjectB\ProjectB.csproj</DependsOn>
         </Project>
     </ItemGroup>
 
