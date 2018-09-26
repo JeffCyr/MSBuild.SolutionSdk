@@ -1,46 +1,60 @@
 <Project InitialTargets="_PrepareProjectReferences">
 
-    <PropertyGroup>
-        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
 
-        <_Platform>$(Platform)</_Platform>
-        <_Platform Condition="'$(_Platform)' == 'Any CPU'">AnyCPU</_Platform>
-        
-        <DefaultProjectItemExcludes Condition="'$(DefaultProjectItemExcludes)' != ''">$(DefaultProjectItemExcludes);</DefaultProjectItemExcludes>
-        <DefaultProjectItemExcludes>$(DefaultProjectItemExcludes)$(MSBuildProjectFile)</DefaultProjectItemExcludes>
-    </PropertyGroup>
+    <_Platform>$(Platform)</_Platform>
+    <_Platform Condition="'$(_Platform)' == 'Any CPU'">AnyCPU</_Platform>
 
-    <Target Name="Build">
-        <MSBuild Projects="@(_ProjectReference)" Targets="Build" BuildInParallel="$(BuildInParallel)" />
-    </Target>
+    <DefaultProjectItemExcludes Condition="'$(DefaultProjectItemExcludes)' != ''">$(DefaultProjectItemExcludes);</DefaultProjectItemExcludes>
+    <DefaultProjectItemExcludes>$(DefaultProjectItemExcludes)$(MSBuildProjectFile)</DefaultProjectItemExcludes>
+  </PropertyGroup>
 
-    <Target Name="Clean">
-        <MSBuild Projects="@(_ProjectReference)" Targets="Clean" BuildInParallel="$(BuildInParallel)" />
-    </Target>
+  <Target Name="Build">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Build" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  </Target>
 
-    <Target Name="Rebuild">
-        <MSBuild Projects="@(_ProjectReference)" Targets="Rebuild" BuildInParallel="$(BuildInParallel)" />
-    </Target>
+  <Target Name="Clean">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Clean" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  </Target>
 
-    <Target Name="Restore">
-        <MSBuild Projects="@(_ProjectReference)" Targets="Restore" BuildInParallel="$(BuildInParallel)" />
-    </Target>
+  <Target Name="Rebuild">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Rebuild" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  </Target>
 
-    <Target Name="Publish">
-        <MSBuild Projects="@(_ProjectReference)" Targets="Publish" BuildInParallel="$(BuildInParallel)" />
-    </Target>
+  <Target Name="Restore">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Restore" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  </Target>
 
-    <Target Name="ListProjects">
-        <Message Importance="high" Text="%(Project.FullPath) (%(Configuration)|%(Platform))" />
-    </Target>
+  <Target Name="Publish">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Publish" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  </Target>
 
-    <Target Name="_PrepareProjectReferences">
-        <ItemGroup>
-            <_ProjectReference Include="@(Project)">
-                <Properties>Configuration=%(Configuration);Platform=%(Platform)</Properties>
-                <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
-            </_ProjectReference>
-        </ItemGroup>
-    </Target>
+  <Target Name="ListProjects">
+    <Message Importance="high" Text="%(Project.FullPath) (%(Configuration)|%(Platform))" />
+  </Target>
+
+  <UsingTask TaskName="PrepareProjectReferences" AssemblyFile="$(SolutionSdkTasksAssembly)" />
+
+  <Target Name="_PrepareProjectReferences">
+    <ItemGroup>
+      <_ProjectReferenceForMetadata Include="@(Project)">
+        <Properties>Configuration=%(Configuration);Platform=%(Platform)</Properties>
+        <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
+      </_ProjectReferenceForMetadata>
+    </ItemGroup>
+
+    <MSBuild Projects="@(_ProjectReferenceForMetadata)" Targets="GetProjectMetadata" BuildInParallel="$(BuildInParallel)" SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_ProjectMetadata" />
+    </MSBuild>
+
+    <PrepareProjectReferences Projects="@(Project)" ProjectsMetadata="@(_ProjectMetadata)">
+      <Output TaskParameter="ProjectReferences" ItemName="_ProjectReference" />
+    </PrepareProjectReferences>
+  </Target>
+
+  <Target Name="Test">
+    <Message Importance="high" Text="%(_ProjectReference.Identity) (BuildOrder: %(BuildOrder), Properties: %(Properties))" />
+  </Target>
 
 </Project>

@@ -1,32 +1,33 @@
 <Project>
 
-    <PropertyGroup>
-        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-        
-        <UsingSolutionSdk>true</UsingSolutionSdk>
-        <SolutionSdkTargetsDirectory>$(MSBuildThisFileDirectory)</SolutionSdkTargetsDirectory>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
 
-        <Configurations Condition=" '$(Configurations)' == '' ">Debug;Release</Configurations>
-        <Platforms Condition=" '$(Platforms)' == '' ">AnyCPU</Platforms>
-        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <UsingSolutionSdk>true</UsingSolutionSdk>
+    <SolutionSdkTargetsDirectory>$(MSBuildThisFileDirectory)</SolutionSdkTargetsDirectory>
+    <SolutionSdkTasksAssembly>$(MSBuildThisFileDirectory)..\Tasks\netstandard2.0\MSBuild.SolutionSdk.dll</SolutionSdkTasksAssembly>
 
-        <EnableDefaultProjectItems Condition="'$(EnableDefaultProjectItems)' == ''">true</EnableDefaultProjectItems>
-        <DefaultProjectItemIncludes Condition="'$(DefaultProjectItemIncludes)' == ''">**/*.csproj;**/*.vbproj;**/*.fsproj;**/*.vcxproj</DefaultProjectItemIncludes>
+    <Configurations Condition=" '$(Configurations)' == '' ">Debug;Release</Configurations>
+    <Platforms Condition=" '$(Platforms)' == '' ">AnyCPU</Platforms>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 
-        <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
-    </PropertyGroup>
+    <EnableDefaultProjectItems Condition="'$(EnableDefaultProjectItems)' == ''">true</EnableDefaultProjectItems>
+    <DefaultProjectItemIncludes Condition="'$(DefaultProjectItemIncludes)' == ''">**/*.csproj;**/*.vbproj;**/*.fsproj;**/*.vcxproj</DefaultProjectItemIncludes>
 
-    <ItemDefinitionGroup>
-        <Project>
-            <Configuration>$(Configuration)</Configuration>
-            <Platform>$(_Platform)</Platform>
-            <AdditionalProperties>$(AdditionalProperties)</AdditionalProperties>
-        </Project>
-    </ItemDefinitionGroup>
+    <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
+  </PropertyGroup>
 
-    <ItemGroup Condition="'$(EnableDefaultProjectItems)' == 'true'">
-        <Project Include="$(DefaultProjectItemIncludes)" Exclude="$(DefaultProjectItemExcludes)" />
-    </ItemGroup>
+  <ItemDefinitionGroup>
+    <Project>
+      <Configuration>$(Configuration)</Configuration>
+      <Platform>$(_Platform)</Platform>
+      <AdditionalProperties>$(AdditionalProperties)</AdditionalProperties>
+    </Project>
+  </ItemDefinitionGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultProjectItems)' == 'true'">
+    <Project Include="$(DefaultProjectItemIncludes)" Exclude="$(DefaultProjectItemExcludes)" />
+  </ItemGroup>
 
 </Project>

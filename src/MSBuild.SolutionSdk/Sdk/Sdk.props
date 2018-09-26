@@ -1,9 +1,9 @@
 <Project DefaultTargets="Build">
 
-    <PropertyGroup>
-        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    </PropertyGroup>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
 
-    <Import Project="$(MSBuildThisFileDirectory)..\Targets\MSBuild.SolutionSdk.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\Targets\MSBuild.SolutionSdk.props" />
 
 </Project>

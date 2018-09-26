@@ -110,10 +110,26 @@ Here, the `Debug` configuration is overriden by `windows-debug` for ProjectA.csp
 
 You can include the same project multiple times with different metadata to build different savor of the same project with a single msbuild command.
 
+## Declaring project dependencies
+```xml
+<Project Sdk="MSBuild.SolutionSdk/X.X.X">
+
+    <PropertyGroup>
+        <EnableDefaultProjectItems>false</EnableDefaultProjectItems>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Project Include="ProjectA\ProjectA.csproj" />
+        <Project Include="ProjectB\ProjectB.csproj" DependsOn="ProjectA" />
+    </ItemGroup>
+
+</Project>
+```
+
+The build order is normally enforced by `ProjectReference`. Otherwise, explicit project dependencies can be declared to enforce a custom build order.
 
 # Roadmap
-- Support explicit project dependencies with `<Project Include="project.csproj" DependsOn="otherproject.csproj" />`
-- Automatically skip projects when `Configuration` or `Platform` is not defined in the project configurations.
+- Integrate with SlnGen
 
 # Open Questions
 - Should the Sdk import and extends Microsoft.Common props & targets?

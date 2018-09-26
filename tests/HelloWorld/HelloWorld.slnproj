@@ -1,0 +1,19 @@
+<Project>
+  <Import Project="..\..\src\MSBuild.SolutionSdk\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <SolutionSdkTasksAssembly>$(MSBuildThisFileDirectory)..\..\src\bin\Debug\MSBuild.SolutionSdk.dll</SolutionSdkTasksAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableDefaultProjectItems>false</EnableDefaultProjectItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Project Include="HelloWorld\HelloWorld.csproj">
+      <Configuration>Release</Configuration>
+    </Project>
+  </ItemGroup>
+
+  <Import Project="..\..\src\MSBuild.SolutionSdk\Sdk\Sdk.targets" />
+</Project>

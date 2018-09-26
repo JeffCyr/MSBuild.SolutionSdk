@@ -1,0 +1,18 @@
+<Project>
+
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin</BaseOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <Version>0.1.0</Version>
+    <Authors>Jeff Cyr</Authors>
+    <Copyright>© Jeff Cyr</Copyright>
+    <PackageLicenseUrl>https://github.com/JeffCyr/MSBuild.SolutionSdk/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/JeffCyr/MSBuild.SolutionSdk</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/JeffCyr/MSBuild.SolutionSdk</RepositoryUrl>
+
+  </PropertyGroup>
+
+</Project>
