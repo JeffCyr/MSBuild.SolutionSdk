@@ -53,29 +53,17 @@ namespace MSBuild.SolutionSdk.Tasks
                     return;
                 }
 
-                string configurations = projectMetadata.GetMetadata("Configurations");
-                var supportedConfigurations = configurations.Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                var supportedConfigurations = projectMetadata
+                    .GetMetadata("Configurations")
+                    .Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-                string platforms = projectMetadata.GetMetadata("Platforms");
-                var supportedPlatforms = platforms.Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                var supportedPlatforms = projectMetadata
+                    .GetMetadata("Platforms")
+                    .Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (!Array.Exists(supportedConfigurations, item => item.Equals(ActiveConfiguration, StringComparison.OrdinalIgnoreCase)))
-                {
-                    SkipProject = true;
-                    return;
-                }
-
-                if (Array.Exists(supportedPlatforms, item => item.Equals(ActivePlatform, StringComparison.OrdinalIgnoreCase)))
-                    return;
-
-                if (Array.Exists(supportedPlatforms, item => item.Equals("AnyCPU", StringComparison.OrdinalIgnoreCase)))
-                {
-                    ActivePlatform = "AnyCPU";
-                    return;
-                }
-
-                // Platform not supported
-                SkipProject = true;
+                SkipProject =
+                    !supportedConfigurations.Contains(ActiveConfiguration, StringComparer.OrdinalIgnoreCase) ||
+                    !supportedPlatforms.Contains(ActivePlatform, StringComparer.OrdinalIgnoreCase);
             }
 
             public ITaskItem CreateProjectReferenceItem(int buildOrder)

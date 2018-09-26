@@ -53,8 +53,17 @@
     </PrepareProjectReferences>
   </Target>
 
-  <Target Name="Test">
-    <Message Importance="high" Text="%(_ProjectReference.Identity) (BuildOrder: %(BuildOrder), Properties: %(Properties))" />
+  <Target Name="GetProjectMetadata" Returns="@(_ProjectMetadata)">
+
+    <ItemGroup>
+      <_ProjectMetadata Include="$(MSBuildProjectFullPath)">
+        <UsingMicrosoftNETSdk>false</UsingMicrosoftNETSdk>
+        <OutputPath></OutputPath>
+        <Configurations>$(Configurations)</Configurations>
+        <Platforms>$(Platforms)</Platforms>
+      </_ProjectMetadata>
+    </ItemGroup>
+
   </Target>
 
 </Project>

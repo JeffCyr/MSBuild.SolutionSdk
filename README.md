@@ -128,7 +128,18 @@ You can include the same project multiple times with different metadata to build
 
 The build order is normally enforced by `ProjectReference`. Otherwise, explicit project dependencies can be declared to enforce a custom build order.
 
+## Automatically skipping unsupported configurations and platforms
+
+You may have defined custom build configurations that not every project in your solution implements. You would typically go in the Visual Studio Configuration Manager and uncheck those projects to prevent them from building.
+
+This is done automatically by .slnproj, but you need to add a `PackageReference` to all projects (ideally declared once in Directory.Build.props).
+
+```xml
+    <PackageReference Include="MSBuild.SolutionSdk.Hook" Version="X.X.X" />
+```
+
 # Roadmap
+- Full documentation
 - Integrate with SlnGen
 
 # Open Questions
