@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="..\src\MSBuild.SolutionSdk.Hook\build\MSBuild.SolutionSdk.Hook.props" />
-</Project>

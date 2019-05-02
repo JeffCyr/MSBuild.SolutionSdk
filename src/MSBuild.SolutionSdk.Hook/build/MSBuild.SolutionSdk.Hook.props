@@ -1,8 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <UsingSolutionSdkHook>true</UsingSolutionSdkHook>
-  </PropertyGroup>
-
-</Project>

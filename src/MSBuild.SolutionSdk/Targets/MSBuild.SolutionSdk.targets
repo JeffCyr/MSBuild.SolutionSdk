@@ -1,4 +1,4 @@
-<Project InitialTargets="_PrepareProjectReferences">
+<Project>
 
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -10,60 +10,47 @@
     <DefaultProjectItemExcludes>$(DefaultProjectItemExcludes)$(MSBuildProjectFile)</DefaultProjectItemExcludes>
   </PropertyGroup>
 
-  <Target Name="Build">
-    <MSBuild Projects="@(_ProjectReference)" Targets="Build" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  <Target Name="Build" DependsOnTargets="_PrepareProjectReferences">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Build" Properties="$(_BuildProjectReferences)_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
   </Target>
 
-  <Target Name="Clean">
-    <MSBuild Projects="@(_ProjectReference)" Targets="Clean" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  <Target Name="Clean" DependsOnTargets="_PrepareProjectReferences">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Clean" Properties="$(_BuildProjectReferences)_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
   </Target>
 
-  <Target Name="Rebuild">
-    <MSBuild Projects="@(_ProjectReference)" Targets="Rebuild" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  <Target Name="Rebuild" DependsOnTargets="_PrepareProjectReferences">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Rebuild" Properties="$(_BuildProjectReferences)_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
   </Target>
 
-  <Target Name="Restore">
-    <MSBuild Projects="@(_ProjectReference)" Targets="Restore" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  <Target Name="Restore" DependsOnTargets="_PrepareProjectReferences">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Restore" Properties="$(_BuildProjectReferences)_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
   </Target>
 
-  <Target Name="Publish">
-    <MSBuild Projects="@(_ProjectReference)" Targets="Publish" Properties="_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)" />
+  <Target Name="Publish" DependsOnTargets="_PrepareProjectReferences">
+    <MSBuild Projects="@(_ProjectReference)" Targets="Publish" Properties="$(_BuildProjectReferences)_SolutionSdkBuildOrder=%(BuildOrder)" BuildInParallel="$(BuildInParallel)"  />
   </Target>
 
   <Target Name="ListProjects">
     <Message Importance="high" Text="%(Project.FullPath) (%(Configuration)|%(Platform))" />
   </Target>
 
+  <Target Name="PrintBuildOrder" DependsOnTargets="_PrepareProjectReferences">
+    <Message Importance="high" Text="%(_ProjectReference.FullPath) (%(BuildOrder))" />
+  </Target>
+
   <UsingTask TaskName="PrepareProjectReferences" AssemblyFile="$(SolutionSdkTasksAssembly)" />
 
   <Target Name="_PrepareProjectReferences">
-    <ItemGroup>
-      <_ProjectReferenceForMetadata Include="@(Project)">
-        <Properties>Configuration=%(Configuration);Platform=%(Platform)</Properties>
-        <AdditionalProperties>%(AdditionalProperties)</AdditionalProperties>
-      </_ProjectReferenceForMetadata>
-    </ItemGroup>
-
-    <MSBuild Projects="@(_ProjectReferenceForMetadata)" Targets="GetProjectMetadata" BuildInParallel="$(BuildInParallel)" SkipNonexistentTargets="true">
-      <Output TaskParameter="TargetOutputs" ItemName="_ProjectMetadata" />
-    </MSBuild>
-
-    <PrepareProjectReferences Projects="@(Project)" ProjectsMetadata="@(_ProjectMetadata)">
+    
+    <PrepareProjectReferences Projects="@(Project)" MSBuildProjectDirectory="$(MSBuildProjectDirectory)" CustomBuild="$(CustomBuild)">
       <Output TaskParameter="ProjectReferences" ItemName="_ProjectReference" />
+      <Output TaskParameter="ActualCustomBuild" PropertyName="ActualCustomBuild" />
     </PrepareProjectReferences>
-  </Target>
 
-  <Target Name="GetProjectMetadata" Returns="@(_ProjectMetadata)">
-
-    <ItemGroup>
-      <_ProjectMetadata Include="$(MSBuildProjectFullPath)">
-        <UsingMicrosoftNETSdk>false</UsingMicrosoftNETSdk>
-        <OutputPath></OutputPath>
-        <Configurations>$(Configurations)</Configurations>
-        <Platforms>$(Platforms)</Platforms>
-      </_ProjectMetadata>
-    </ItemGroup>
-
+    <PropertyGroup Condition="$(ActualCustomBuild) == 'true'">
+      <_BuildProjectReferences>BuildProjectReferences=false;</_BuildProjectReferences>
+    </PropertyGroup>
+    
   </Target>
 
 </Project>

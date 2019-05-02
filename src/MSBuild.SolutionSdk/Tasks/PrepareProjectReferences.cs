@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -11,7 +12,10 @@ namespace MSBuild.SolutionSdk.Tasks
     {
         private class ProjectNode
         {
-            public ITaskItem ProjectItem;
+            private HashSet<string> _projectReferencePaths;
+            private HashSet<ProjectNode> _dependentProjects;
+
+            public ITaskItem ProjectItem { get; }
 
             public int OriginalOrder { get; }
 
@@ -19,47 +23,74 @@ namespace MSBuild.SolutionSdk.Tasks
 
             public string ProjectPath { get; }
 
-            public string DependsOn { get; }
-
             public string ActiveConfiguration { get; }
 
-            public string ActivePlatform { get; private set; }
+            public string ActivePlatform { get; }
+
+            public string AdditionalProperties { get; }
+
+            public List<string> DependsOn { get; }
 
             public bool SkipProject { get; private set; }
 
-            public List<ProjectNode> DependentProjects { get; }
+            public IReadOnlyCollection<string> ProjectReferencePaths => _projectReferencePaths;
 
-            public bool HasDependencies => DependsOn != "";
+            public IReadOnlyCollection<ProjectNode> DependentProjects => _dependentProjects;
+
+            public bool HasDependencies => DependsOn.Count > 0 || ProjectReferencePaths.Count > 0;
 
             public ProjectNode(ITaskItem projectItem, int originalOrder)
             {
-                DependentProjects = new List<ProjectNode>();
+                _projectReferencePaths = new HashSet<string>();
+                _dependentProjects = new HashSet<ProjectNode>();
+                DependsOn = new List<string>();
 
                 ProjectItem = projectItem;
                 OriginalOrder = originalOrder;
 
                 ProjectName = projectItem.GetMetadata("Filename");
                 ProjectPath = projectItem.GetMetadata("FullPath");
-                DependsOn = projectItem.GetMetadata("DependsOn");
                 ActiveConfiguration = projectItem.GetMetadata("Configuration");
                 ActivePlatform = projectItem.GetMetadata("Platform");
+                AdditionalProperties = ProjectItem.GetMetadata("AdditionalProperties");
+
+                ParseDependsOn(projectItem.GetMetadata("DependsOn"));
             }
 
-            public void SetProjectMetadata(ITaskItem projectMetadata)
+            private void ParseDependsOn(string dependsOn)
             {
-                if (!projectMetadata.GetMetadata("UsingMicrosoftNETSdk").Equals("true", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrEmpty(dependsOn))
+                    return;
+
+                string[] dependencies = dependsOn.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string dependency in dependencies)
+                    DependsOn.Add(dependency.Trim());
+            }
+
+            public void SetProjectMetadata(Project msbuildProject, bool isCustomBuild)
+            {
+                if (!msbuildProject.GetPropertyValue("UsingMicrosoftNETSdk").Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
-                    SkipProject = string.IsNullOrEmpty(projectMetadata.GetMetadata("OutputPath"));
+                    SkipProject = string.IsNullOrEmpty(msbuildProject.GetPropertyValue("OutputPath"));
                     return;
                 }
 
-                var supportedConfigurations = projectMetadata
-                    .GetMetadata("Configurations")
-                    .Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                var supportedConfigurations = msbuildProject
+                    .GetPropertyValue("Configurations")
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-                var supportedPlatforms = projectMetadata
-                    .GetMetadata("Platforms")
-                    .Split(new [] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                var supportedPlatforms = msbuildProject
+                    .GetPropertyValue("Platforms")
+                    .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (isCustomBuild)
+                {
+                    var projectReferences = msbuildProject.GetItems("ProjectReference");
+
+                    foreach (var projectRef in projectReferences)
+                        _projectReferencePaths.Add(projectRef.GetMetadataValue("FullPath"));
+                }
 
                 SkipProject =
                     !supportedConfigurations.Contains(ActiveConfiguration, StringComparer.OrdinalIgnoreCase) ||
@@ -70,9 +101,36 @@ namespace MSBuild.SolutionSdk.Tasks
             {
                 var item = new TaskItem(ProjectItem.ItemSpec);
                 item.SetMetadata("Properties", $"Configuration={ActiveConfiguration};Platform={ActivePlatform}");
-                item.SetMetadata("AdditionalProperties", ProjectItem.GetMetadata("AdditionalProperties"));
+                item.SetMetadata("AdditionalProperties", AdditionalProperties);
                 item.SetMetadata("BuildOrder", buildOrder.ToString());
                 return item;
+            }
+
+            public void AddAdditionalProperties(Dictionary<string, string> globalProperties)
+            {
+                if (!string.IsNullOrEmpty(AdditionalProperties))
+                {
+                    string[] properties = AdditionalProperties.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string property in properties)
+                    {
+                        string[] values = property.Split(';');
+
+                        if (values.Length != 2)
+                        {
+                            globalProperties.Add(property, "");
+                        }
+                        else
+                        {
+                            globalProperties.Add(values[0].Trim(), values[1].Trim());
+                        }
+                    }
+                }
+            }
+
+            public void AddDependentProject(ProjectNode project)
+            {
+                _dependentProjects.Add(project);
             }
         }
 
@@ -80,62 +138,104 @@ namespace MSBuild.SolutionSdk.Tasks
         public ITaskItem[] Projects { get; set; }
 
         [Required]
-        public ITaskItem[] ProjectsMetadata { get; set; }
+        public string MSBuildProjectDirectory { get; set; }
+
+        public bool CustomBuild { get; set; }
 
         [Output]
         public ITaskItem[] ProjectReferences { get; private set; }
 
+        [Output]
+        public bool ActualCustomBuild { get; private set; }
+
         public override bool Execute()
         {
             var nodes = new Dictionary<string, ProjectNode>(Projects.Length);
-            var skippedProjects = new List<ProjectNode>();
-            bool hasAtLeastOneDependency = false;
 
             for (var i = 0; i < Projects.Length; i++)
             {
                 var project = Projects[i];
                 var node = new ProjectNode(project, i);
 
-                if (node.DependsOn != "")
-                    hasAtLeastOneDependency = true;
-
+                // Force CustomBuild if DependsOn is used
+                CustomBuild |= node.DependsOn.Count > 0;
                 nodes.Add(node.ProjectPath, node);
             }
+            //System.Diagnostics.Debug.Fail("Break");
+            EvaluateProjectsMetadata(nodes.Values);
 
-            foreach (var metadata in ProjectsMetadata)
-            {
-                var node = nodes[metadata.ItemSpec];
-                node.SetProjectMetadata(metadata);
-
-                if (node.SkipProject)
-                    skippedProjects.Add(node);
-            }
-
-            foreach (var project in skippedProjects)
+            foreach (var project in nodes.Values.Where(item => item.SkipProject).ToArray())
             {
                 Log.LogMessage("Skipped project '{0}' due to unsupported configuration or platform", project.ProjectName);
                 nodes.Remove(project.ProjectPath);
             }
 
-            if (hasAtLeastOneDependency)
+            if (CustomBuild)
             {
-                if (!TryAssignDependencies(nodes))
+                ActualCustomBuild = true;
+
+                if (!TryAddDependsOnToDependentProjects(nodes))
+                    return false;
+
+                if (!TryAddProjectReferencesToDependentProjects(nodes))
                     return false;
 
                 ProjectReferences = GetOrderedProjectReferenceWithDependencies(nodes);
+
+                if (ProjectReferences == null)
+                    return false;
             }
             else
             {
                 ProjectReferences = nodes.Values
                     .OrderBy(item => item.OriginalOrder)
-                    .Select(item => item.CreateProjectReferenceItem(buildOrder:0))
+                    .Select(item => item.CreateProjectReferenceItem(buildOrder: 0))
                     .ToArray();
             }
 
             return true;
         }
 
-        private bool TryAssignDependencies(Dictionary<string, ProjectNode> projects)
+        private void EvaluateProjectsMetadata(IEnumerable<ProjectNode> nodes)
+        {
+            using (ProjectCollection projectCollection = new ProjectCollection())
+            {
+                foreach (var node in nodes)
+                {
+                    var globalProperties = new Dictionary<string, string>
+                    {
+                        { "Configuration", node.ActiveConfiguration },
+                        { "Platform", node.ActivePlatform }
+                    };
+
+                    node.AddAdditionalProperties(globalProperties);
+
+                    var msbuildProject = projectCollection.LoadProject(node.ProjectPath, globalProperties, toolsVersion: null);
+                    node.SetProjectMetadata(msbuildProject, CustomBuild);
+                }
+            }
+        }
+
+        private bool TryAddProjectReferencesToDependentProjects(Dictionary<string, ProjectNode> projects)
+        {
+            foreach (var project in projects.Values)
+            {
+                foreach (string refPath in project.ProjectReferencePaths)
+                {
+                    if (!projects.TryGetValue(refPath, out var refProject))
+                    {
+                        Log.LogError("The project reference has not been found in the solution ['{0}' -> '{1}']", project.ProjectName, refPath);
+                        return false;
+                    }
+
+                    refProject.AddDependentProject(project);
+                }
+            }
+
+            return true;
+        }
+
+        private bool TryAddDependsOnToDependentProjects(Dictionary<string, ProjectNode> projects)
         {
             var projectNameMap = (
                 from p in projects.Values
@@ -145,52 +245,42 @@ namespace MSBuild.SolutionSdk.Tasks
 
             foreach (var project in projects.Values)
             {
-                if (!project.HasDependencies)
-                    continue;
-
-                string dependencyPath = project.DependsOn;
-                string dependencyProjectName = Path.GetFileNameWithoutExtension(dependencyPath);
-
-                if (!projectNameMap.TryGetValue(dependencyProjectName, out var possibleParent))
-                {
-                    Log.LogError("The project specified in DependsOn has not been found in the solution ['{0}' -> '{1}']", project.ProjectName, project.DependsOn);
-                    return false;
-                }
-
-                if (possibleParent.Count == 1)
-                {
-                    possibleParent[0].DependentProjects.Add(project);
-                }
-                else if (!Path.HasExtension(dependencyPath))
-                {
-                    Log.LogError("Ambiguous project name specified in DependsOn, an unambiguous project path must be specified ['{0}' -> '{1}']", project.ProjectName, project.DependsOn);
-                    return false;
-                }
-                else
+                foreach (string dependencyPath in project.DependsOn)
                 {
                     ProjectNode matchedParent = null;
 
-                    foreach (var parent in possibleParent)
+                    if (!Path.HasExtension(dependencyPath))
                     {
-                        if (parent.ProjectPath.EndsWith(dependencyPath, StringComparison.OrdinalIgnoreCase))
+                        var possibleProjects = projectNameMap[dependencyPath];
+
+                        if (projectNameMap.TryGetValue(dependencyPath, out var parents))
                         {
-                            if (matchedParent != null)
+                            if (parents.Count > 1)
                             {
                                 Log.LogError("Ambiguous project name specified in DependsOn, an unambiguous project path must be specified ['{0}' -> '{1}']", project.ProjectName, project.DependsOn);
                                 return false;
                             }
 
-                            matchedParent = parent;
+                            matchedParent = parents[0];
                         }
+                    }
+                    else if (Path.IsPathRooted(dependencyPath))
+                    {
+                        projects.TryGetValue(dependencyPath, out matchedParent);
+                    }
+                    else
+                    {
+                        string fullPath = Path.GetFullPath(Path.Combine(MSBuildProjectDirectory, dependencyPath));
+                        projects.TryGetValue(fullPath, out matchedParent);
                     }
 
                     if (matchedParent == null)
                     {
-                        Log.LogError("The project specified in DependsOn has not been found in the solution ['{0}' -> '{1}']", project.ProjectName, project.DependsOn);
+                        Log.LogError("The project specified in DependsOn has not been found in the solution ['{0}' -> '{1}']", project.ProjectName, dependencyPath);
                         return false;
                     }
 
-                    matchedParent.DependentProjects.Add(project);
+                    matchedParent.AddDependentProject(project);
                 }
             }
 
@@ -199,6 +289,8 @@ namespace MSBuild.SolutionSdk.Tasks
 
         private ITaskItem[] GetOrderedProjectReferenceWithDependencies(Dictionary<string, ProjectNode> nodes)
         {
+            HashSet<ProjectNode> visited = new HashSet<ProjectNode>();
+
             var references = new List<ITaskItem>(nodes.Count);
             var buildStep = nodes.Values.Where(item => !item.HasDependencies).ToList();
             int buildOrder = 0;
@@ -206,6 +298,15 @@ namespace MSBuild.SolutionSdk.Tasks
             while (buildStep.Count > 0)
             {
                 var currentStep = buildStep.ToArray();
+
+                foreach (var project in currentStep)
+                {
+                    if (!visited.Add(project))
+                    {
+                        Log.LogError("Cyclic dependency detected for project '{0}'", project.ProjectName);
+                        return null;
+                    }
+                }
 
                 var referenceItems = currentStep
                     .OrderBy(item => item.OriginalOrder)

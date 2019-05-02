@@ -6,7 +6,7 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Jeff Cyr</Authors>
     <Copyright>© Jeff Cyr</Copyright>
     <PackageLicenseUrl>https://github.com/JeffCyr/MSBuild.SolutionSdk/blob/master/LICENSE</PackageLicenseUrl>

@@ -9,6 +9,7 @@
     <PackageTags>msbuild;sdk;slnproj</PackageTags>
     <PackageType>MSBuildSdk</PackageType>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <NoWarn>NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build" Version="15.8.166" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
   </ItemGroup>
 
 </Project>
